@@ -89,7 +89,7 @@
 
         // High または Low のお題をランダムに生成
         function generateHighLowTopic() {
-            highLowTopic = Math.random() > 0.5 ? 'High' : 'Low';
+            highLowTopic = Math.random() > 0.5 ? 'High' : 'Low'; //「high」と「low」のどちらかを同じ割合で抽出
             document.getElementById('high-low-topic').textContent = highLowTopic;
         }
 
@@ -98,10 +98,10 @@
             const dealerCard = dealerHand[0]; // 常にディーラーの最初のカードを使用
             const playerCard = playerHand[index];
 
-            const dealerValue = getCardValue(dealerCard.value);
-            const playerValue = getCardValue(playerCard.value);
-            const dealerSuitValue = getSuitValue(dealerCard.suit);
-            const playerSuitValue = getSuitValue(playerCard.suit);
+            const dealerValue = getCardValue(dealerCard.value); // ディーラーの数値
+            const playerValue = getCardValue(playerCard.value); // プレイヤーの数値
+            const dealerSuitValue = getSuitValue(dealerCard.suit);// ディーラーのマーク
+            const playerSuitValue = getSuitValue(playerCard.suit);// プレイヤーのマーク
 
             if (dealerValue === playerValue) {
                 // 数値が同じ場合、マークの優劣で判定
@@ -121,12 +121,12 @@
                 gameActive = false;
             }
 
-            currentRound++;
-            if (currentRound < 10 && gameActive) {
+            currentRound++; // ラウンドが１ずつ上がる
+            if (currentRound < 10 && gameActive) { // ラウンド１～９ and ゲームが進行状態
                 generateHighLowTopic(); // 次のラウンドのお題を生成
-            } else if (currentRound >= 10) {
+            } else if (currentRound >= 10) { // ラウンド１０以上
                 document.getElementById('result').textContent += " ゲーム終了！";
-                gameActive = false;
+                gameActive = false; // ゲームを進行不能状態にする
                 document.getElementById('result2').textContent += "今回のスコア：" + currentRound + "連勝";
             }
         }
@@ -141,21 +141,23 @@
         // カードの値を数値に変換する関数
         function getCardValue(value) {
             switch (value) {
-                case 'ACE': return 14;
-                case 'KING': return 13;
-                case 'QUEEN': return 12;
-                case 'JACK': return 11;
+                case 'ACE': return 14; // 「A」は14
+                case 'KING': return 13;// 「K」は13
+                case 'QUEEN': return 12;// 「Q」は12
+                case 'JACK': return 11;// 「J」は11
                 default: return parseInt(value);
+                // その他は数字の通り
             }
         }
 
         // カードのマークを数値に変換する関数
         function getSuitValue(suit) {
             switch (suit) {
-                case 'SPADES': return 4;
-                case 'HEARTS': return 3;
-                case 'DIAMONDS': return 2;
-                case 'CLUBS': return 1;
+                // 同じ数字で、マークで比べるなら
+                case 'SPADES': return 4; // 「スペード」が１番強い
+                case 'HEARTS': return 3; // 「ハート」が２番目に強い
+                case 'DIAMONDS': return 2;// 「ダイヤ」が３番目に強い
+                case 'CLUBS': return 1; // 「クラブ」が１番弱い
                 default: return 0;
             }
         }
