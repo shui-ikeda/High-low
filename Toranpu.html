@@ -1,91 +1,144 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HIGH & LOWゲーム</title>
     <link rel="stylesheet" href="Toranpu.css"> 
 </head>
 <body>
     <h1>High & Low ゲーム</h1>
-    <p id="current-card-text">ディーラーのカード:</p> <!-- ディーラーのカードのテキスト表示 -->
-    <img id="current-card-img" src="" alt="ディーラーのカード" style="width:90px;"> <!-- ディーラーのカードの画像 -->
-    <img src="Dekki.png" style="height: 90px; margin-left: 1%;"> <!-- デッキの画像 -->
-    <br>
-    <div>
-        <button id="high-button">High</button> <!-- Highボタン -->
-        <button id="low-button">Low</button> <!-- Lowボタン -->
+    <p>ディーラーの手札:</p>
+    <div id="dealer-hand" style="display: flex; gap: 10px;"> <!-- ディーラーの手札を表示するエリア -->
+    </div>
+    <p>お題: <span id="high-low-topic"></span></p> <!-- お題表示 -->
+    <p>プレイヤーの手札:</p>
+    <div id="player-hand" style="display: flex; gap: 10px;"> <!-- プレイヤーの手札を表示するエリア -->
     </div>
     <p id="result"></p> <!-- 結果を表示するためのテキスト -->
-    <img id="next-card-img" src="" alt="あなたのカード" style="width:90px;"> <!-- プレイヤーのカードの画像 -->
     <br>
-    <img src="Dekki.png" style="height: 90px; margin-left: 1%;"> <!-- デッキの画像 -->
+    <p id = "result2"></p><!-- ○○連勝-->
 
     <script>
-        let deckId; // カード
-        let CountGame; // ゲーム数
-        let GameActive = true; // ゲームの進行状況
-        let NowCard; // 現在ののカード
+        let deckId; // デッキID
+        let dealerHand = []; // ディーラーの手札
+        let playerHand = []; // プレイヤーの手札
+        let currentRound = 0; // 現在のラウンド
+        let highLowTopic; // お題 (High か Low)
+        let gameActive = true; // ゲームの状態(true: ゲーム進行中, false: ゲーム終了)
 
-        // 新規のゲーム
-        function NewGame(){
+        // 新しいデッキを作成してシャッフル
+        function initializeGame() {
+            gameActive = true; // ゲームを開始状態にする
             fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
-            // ↑ 「fetch」で外部のURLからの情報を取得
-            .then(response => 
-                response.json()) // json形式で保存
+            .then(response => response.json())
             .then(data => {
-                deckId = data.deckId; // デッキのIDを保存
-                drawCard(); // カードを引く(関数)
-            })
-        }
-
-        // カードを引く関数
-        function drawCard(){
-            fetch('https://deckofcardsapi.com/api/deck/${deck_id}/draw/?count=1')
-            .then(responce => 
-                responce.json())
-            .then(data => {
-                currentCard = data.cards[0];
-                document.getElementById("current-card-text").textContent
-                    = 'ディーラーのカード：${currentCard.value} of ${currentCard.suit}'; // カードのテキストを更新
-                document.getElementById('current-card-img').src = currentCard.image; // カードの画像を更新
-            
+                deckId = data.deck_id;
+                dealCards(); // カードを配る
             });
         }
 
-        // カードを数値に変換する関数
-        function CardValue(value){
-            switch(value) {
-                case "ACE":
-                    return 14; // "A"は14
-                case "KING":
-                    return 13; // "K"は13
-                case "QUEEN":
-                    return 12; // "Q"は12
-                case "JACK":
-                    return 11; // "J"は11
-                default:
-                    return parseInt(value); // "2~10"はそのまま使う
-            }
+        // ディーラーとプレイヤーにカードを配る
+        function dealCards() {
+            fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=20`) // 合計20枚のカードを引く
+            .then(response => response.json())
+            .then(data => {
+                dealerHand = data.cards.slice(0, 10); // ディーラーの手札10枚
+                playerHand = data.cards.slice(10, 20); // プレイヤーの手札10枚
+                displayHands(); // 手札を表示
+                generateHighLowTopic(); // お題を生成
+            });
         }
-        
-        // プレイヤーの選択に基づいてカードを引く
-        function guessCard(PlayerChoice) {
 
-            /* ゲームがアクティブ状態であれば処理するが、
-            アクティブでないときは何も処理を行わない*/
-            if(GameActive == false){
-                return;
-            }
-            fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`)
-            .then(responce => 
-                responce.json())
-            
+        // ディーラーとプレイヤーの手札を表示
+        function displayHands() {
+            const dealerHandElement = document.getElementById('dealer-hand');
+            const playerHandElement = document.getElementById('player-hand');
+            dealerHandElement.innerHTML = '';
+            playerHandElement.innerHTML = '';
+
+            dealerHand.forEach((card, index) => {
+                const cardImg = document.createElement('img');
+                if (index === 0) {
+                    cardImg.src = card.image; // 最初のカードのみ表向き
+                } else {
+                    cardImg.src = "https://deckofcardsapi.com/static/img/back.png"; // 他は裏向き
+                }
+                cardImg.style.width = '90px';
+                dealerHandElement.appendChild(cardImg); // ディーラーのカードを表示
+            });
+
+            playerHand.forEach((card, index) => {
+                const cardImg = document.createElement('img');
+                cardImg.src = card.image;
+                cardImg.style.width = '90px';
+                cardImg.dataset.index = index;
+
+                // ゲーム進行中のみカード選択が可能
+                cardImg.addEventListener('click', () => {
+                    if (gameActive) {
+                        selectPlayerCard(index); // プレイヤーがカードを選択するイベント
+                    }
+                });
+                playerHandElement.appendChild(cardImg); // プレイヤーのカードを表示
+            });
         }
-        
-        // 新規のゲームを実行する関数を呼び出す
-        NewGame();
-        
+
+        // High または Low のお題をランダムに生成
+        function generateHighLowTopic() {
+            highLowTopic = Math.random() > 0.5 ? 'High' : 'Low';
+            document.getElementById('high-low-topic').textContent = highLowTopic;
+        }
+
+        // プレイヤーがカードを選択したときの処理
+        function selectPlayerCard(index) {
+            const dealerCard = dealerHand[0]; // 常にディーラーの最初のカードを使用
+            const playerCard = playerHand[index];
+
+            const dealerValue = getCardValue(dealerCard.value);
+            const playerValue = getCardValue(playerCard.value);
+
+            if ((highLowTopic === 'High' && playerValue > dealerValue) ||
+                (highLowTopic === 'Low' && playerValue < dealerValue)) {
+                document.getElementById('result').textContent = `ラウンド${currentRound + 1}: あなたの勝ち！ ディーラーのカード: ${dealerCard.value} of ${dealerCard.suit}, あなたのカード: ${playerCard.value} of ${playerCard.suit}`;
+                removeCards(0, index); // 勝利時にカードを捨てる
+            } else {
+                document.getElementById('result').textContent = `ラウンド${currentRound + 1}: あなたの負け... ディーラーのカード: ${dealerCard.value} of ${dealerCard.suit}, あなたのカード: ${playerCard.value} of ${playerCard.suit}`;
+                document.getElementById('result2').textContent += "今回のスコア：" + currentRound + "連勝";
+                gameActive = false; // 敗北時にゲーム終了状態にする
+            }
+
+            currentRound++;
+            if (currentRound < 10 && gameActive) {
+                generateHighLowTopic(); // 次のラウンドのお題を生成
+            } else if (currentRound >= 10) {
+                document.getElementById('result').textContent += " ゲーム終了！";
+                gameActive = false; // ゲーム終了
+                document.getElementById('result2').textContent += "今回のスコア：" + currentRound + "連勝";
+
+            }
+        }
+
+        // 勝利したカードを手札から削除
+        function removeCards(dealerIndex, playerIndex) {
+            dealerHand.splice(dealerIndex, 1); // ディーラーのカードを削除
+            playerHand.splice(playerIndex, 1); // プレイヤーのカードを削除
+            displayHands(); // 更新された手札を表示
+        }
+
+        // カードの値を数値に変換する関数
+        function getCardValue(value) {
+            switch (value) {
+                case 'ACE': return 14;
+                case 'KING': return 13;
+                case 'QUEEN': return 12;
+                case 'JACK': return 11;
+                default: return parseInt(value);
+            }
+        }
+
+        // ゲームの初期化
+        initializeGame();
     </script>
 </body>
 </html>
