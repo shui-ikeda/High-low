@@ -19,8 +19,10 @@
     </div>
     <br>
     <p id="result"></p> <!-- 結果を表示するためのテキスト -->
-    <br>
+    
     <p id="result2"></p> <!-- ○○連勝 -->
+
+    <p id = "result3"></p><!-- 10連勝したら -->
 
     <script>
         let deckId; // デッキID
@@ -33,18 +35,18 @@
         // 新しいデッキを作成してシャッフル
         function initializeGame() {
             gameActive = true; // ゲームを開始状態にする
-            fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
-            .then(response => response.json())
+            fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1') // URLの内容を取得
+            .then(response => response.json()) // json形式で保存
             .then(data => {
-                deckId = data.deck_id;
+                deckId = data.deck_id; // カードの情報を「deckId」という変数に保存
                 dealCards(); // カードを配る
             });
         }
 
         // ディーラーとプレイヤーにカードを配る
         function dealCards() {
-            fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=20`) // 合計20枚のカードを引く
-            .then(response => response.json())
+            fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=20`) // URLの内容を取得し、合計20枚のカードを引く
+            .then(response => response.json()) // json形式で保存
             .then(data => {
                 dealerHand = data.cards.slice(0, 10); // ディーラーの手札10枚
                 playerHand = data.cards.slice(10, 20); // プレイヤーの手札10枚
@@ -102,32 +104,40 @@
             const playerValue = getCardValue(playerCard.value); // プレイヤーの数値
             const dealerSuitValue = getSuitValue(dealerCard.suit);// ディーラーのマーク
             const playerSuitValue = getSuitValue(playerCard.suit);// プレイヤーのマーク
+            const dealerSuitWord = getSuitWord(dealerCard.suit); // ディーラーのマーク(文字)
+            const playerSuitWord = getSuitWord(playerCard.suit); // プレイヤーのマーク(文字)
 
             if (dealerValue === playerValue) {
                 // 数値が同じ場合、マークの優劣で判定
                 if (dealerSuitValue > playerSuitValue) {
-                    document.getElementById('result').textContent = `ラウンド${currentRound + 1}: あなたの負け... ディーラーのカード: ${dealerCard.value} of ${dealerCard.suit}, あなたのカード: ${playerCard.value} of ${playerCard.suit}`;
+                    document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="red-text">あなたの負け！</span><br>ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}：  あなたのカード➤${playerSuitWord} - ${playerValue}<br>`;
+                    document.getElementById('result').innerHTML += '<br><span class="green-text">ゲーム終了！</span>';
+                    document.getElementById('result2').innerHTML += "今回のスコア：" + currentRound + "連勝";
+                    document.getElementById('result3').innerHTML = "<img src ='Not10win.jpg'>";
                     gameActive = false;
                 } else {
-                    document.getElementById('result').textContent = `ラウンド${currentRound + 1}: あなたの勝ち！ ディーラーのカード: ${dealerCard.value} of ${dealerCard.suit}, あなたのカード: ${playerCard.value} of ${playerCard.suit}`;
+                    document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="blue-text"> あなたの勝ち！</span><br> ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}： あなたのカード➤${playerSuitWord} - ${playerValue}<br>`;
                     removeCards(0, index); // 勝利時にカードを捨てる
                 }
             } else if ((highLowTopic === 'High' && playerValue > dealerValue) ||
                        (highLowTopic === 'Low' && playerValue < dealerValue)) {
-                document.getElementById('result').textContent = `ラウンド${currentRound + 1}: あなたの勝ち！ ディーラーのカード: ${dealerCard.value} of ${dealerCard.suit}, あなたのカード: ${playerCard.value} of ${playerCard.suit}`;
-                removeCards(0, index); // 勝利時にカードを捨てる
+                    document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="blue-text">あなたの勝ち！</span><br>ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}： あなたのカード➤ ${playerSuitWord} - ${playerValue}<br>`;
+                    removeCards(0, index); // 勝利時にカードを捨てる
             } else {
-                document.getElementById('result').textContent = `ラウンド${currentRound + 1}: あなたの負け... ディーラーのカード: ${dealerCard.value} of ${dealerCard.suit}, あなたのカード: ${playerCard.value} of ${playerCard.suit}`;
-                gameActive = false;
+                    document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="red-text">あなたの負け！</span><br>ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}： あなたのカード➤ ${playerSuitWord} - ${playerValue}<br>`;
+                    document.getElementById('result').innerHTML += '<br><span class="green-text">ゲーム終了！</span>';
+                    document.getElementById('result2').innerHTML += "今回のスコア：" + currentRound + "連勝";
+                    document.getElementById('result3').innerHTML = "<img src ='Not10win.jpg'>";
+                    gameActive = false;
             }
 
             currentRound++; // ラウンドが１ずつ上がる
-            if (currentRound < 10 && gameActive) { // ラウンド１～９ and ゲームが進行状態
+            if (currentRound <= 9 && gameActive) { // ラウンド１～９ and ゲームが進行状態
                 generateHighLowTopic(); // 次のラウンドのお題を生成
-            } else if (currentRound >= 10) { // ラウンド１０以上
-                document.getElementById('result').textContent += " ゲーム終了！";
+            } else if (currentRound >= 10 && gameActive) { // ラウンド１０以上
+                document.getElementById('result').innerHTML += '<span class="green-text">ゲーム終了！</span>';
                 gameActive = false; // ゲームを進行不能状態にする
-                document.getElementById('result2').textContent += "今回のスコア：" + currentRound + "連勝";
+                document.getElementById('result3').innerHTML = "<img src ='10win.jpg'>";
             }
         }
 
@@ -159,6 +169,14 @@
                 case 'DIAMONDS': return 2;// 「ダイヤ」が３番目に強い
                 case 'CLUBS': return 1; // 「クラブ」が１番弱い
                 default: return 0;
+            }
+        }
+        function getSuitWord(suit){
+            switch(suit){
+                case 'SPADES' : return 'スペード';
+                case 'HEARTS' : return 'ハート';
+                case 'DIAMONDS' : return 'ダイヤ';
+                case 'CLUBS' : return 'クラブ';
             }
         }
 
