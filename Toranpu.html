@@ -148,6 +148,7 @@
             } else if (currentRound >= 10 && gameActive) { // ラウンド１０以上
                 document.getElementById('result').innerHTML += '<span class="green-text">ゲーム終了！</span>';
                 gameActive = false; // ゲームを進行不能状態にする
+                document.getElementById('result2').innerHTML += "今回のスコア：" + currentRound + "連勝";
                 document.getElementById('result3').innerHTML = "<img src ='10win.jpg'>";
             }
         }
