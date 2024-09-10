@@ -20,3 +20,17 @@ body {
 .button:hover {
     background-color: #45a049;
 }
+#High,#Low{
+    text-decoration: underline;
+    text-decoration-thickness: 4px; 
+}
+#Mark{
+    font-size: 30px;
+}
+#red-text{
+    color:red;
+    font-weight: bolder;
+}
+#font-bold{
+    font-weight: bolder;
+}

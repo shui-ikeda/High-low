@@ -8,26 +8,40 @@
    
 </head>
 <body>
-    <h1>トランプゲームへようこそ</h1>
-    <p>ゲームをプレイするには以下のボタンをクリックしてください。</p>
+    <h1>High & Low へようこそ</h1>
+    <p>ゲームをプレイするにはボタンをクリックしてください。</p>
 
     <a href="Toranpu.html" class="button">ゲーム開始!!</a>
-
-    <h4>
-        ルール
         <ul>
             <li>
                 お互いにカード１０枚とする
             </li>
             <br>
             <li>
-                「High」か「Low」のお題があり、そのお題に沿ってディーラーより数字が「High」か「low」になるものを選ぶ
+                「High」か「Low」のお題に沿ってカードを選ぶ
             </li>
             <br>
             <li>
-
+                お題が「High」の場合は数字がディーラーより<span id = "High">高い</span>ものを選択する
             </li>
+            <br>
+            <li>
+                お題が「Low」の場合は数字がディーラーより<span id = "Low">低い</span>ものを選択する
+            </li>
+            <br>
+            <li>
+                数字が同じになった場合はカードのマークで勝敗を決める
+                <br>
+                ※「High」の場合は <span id = "Mark">♠</span> ＞ <span id = "Mark">♥</span> ＞ <span id = "Mark">♦</span> ＞ <span id= "Mark">♣</span>
+                <br>
+                ※「Low」の場合は <span id="Mark">♣</span> ＞ <span id = "Mark">♦</span> ＞ <span id = "Mark">♥</span> ＞ <span id = "Mark">♠</span>
+            </li>
+            <br>
+            <li>
+                <span id = "font-bold">プレイヤーが10連勝すればゲームクリア！</span>
+            </li>
+            <br>
+            <span id = "red-text">※詰んだらページを更新しよう</span>
         </ul>
-    </h4>
 </body>
 </html>
