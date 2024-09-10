@@ -8,13 +8,13 @@
 </head>
 <body>
     <h1>High & Low ゲーム</h1>
-    <p>ディーラーの手札:</p>
+    <p class = "Dealer">ディーラー</p>
     <div id="dealer-hand" style="display: flex; gap: 10px;"> <!-- ディーラーの手札を表示するエリア -->
     </div>
-    <p>お題: <span id="high-low-topic"></span></p> <!-- お題表示 -->
     <br>
-    <p>プレイヤーの手札:</p>
+    <p class = "Odai">お題：<span id="high-low-topic"></span></p> <!-- お題表示 -->
     <br>
+    <p class="Player">プレイヤー</p>
     <div id="player-hand" style="display: flex; gap: 10px;"> <!-- プレイヤーの手札を表示するエリア -->
     </div>
     <br>
@@ -92,25 +92,36 @@
         // High または Low のお題をランダムに生成
         function generateHighLowTopic() {
             highLowTopic = Math.random() > 0.5 ? 'High' : 'Low'; //「high」と「low」のどちらかを同じ割合で抽出
+       
             document.getElementById('high-low-topic').textContent = highLowTopic;
+            
+
         }
 
-        // プレイヤーがカードを選択したときの処理
+       // プレイヤーがカードを選択したときの処理
         function selectPlayerCard(index) {
             const dealerCard = dealerHand[0]; // 常にディーラーの最初のカードを使用
             const playerCard = playerHand[index];
 
             const dealerValue = getCardValue(dealerCard.value); // ディーラーの数値
             const playerValue = getCardValue(playerCard.value); // プレイヤーの数値
-            const dealerSuitValue = getSuitValue(dealerCard.suit);// ディーラーのマーク
-            const playerSuitValue = getSuitValue(playerCard.suit);// プレイヤーのマーク
+            const dealerSuitValue = getSuitValue(dealerCard.suit); // ディーラーのマーク
+            const playerSuitValue = getSuitValue(playerCard.suit); // プレイヤーのマーク
             const dealerSuitWord = getSuitWord(dealerCard.suit); // ディーラーのマーク(文字)
             const playerSuitWord = getSuitWord(playerCard.suit); // プレイヤーのマーク(文字)
 
+            // お題に応じたマークの強さを決定
+            let adjustedDealerSuitValue = dealerSuitValue;
+            let adjustedPlayerSuitValue = playerSuitValue;
+            if (highLowTopic === 'Low') {
+                adjustedDealerSuitValue = adjustForLow(dealerSuitValue);
+                adjustedPlayerSuitValue = adjustForLow(playerSuitValue);
+            }
+
             if (dealerValue === playerValue) {
                 // 数値が同じ場合、マークの優劣で判定
-                if (dealerSuitValue > playerSuitValue) {
-                    document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="red-text">あなたの負け！</span><br>ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}：  あなたのカード➤${playerSuitWord} - ${playerValue}<br>`;
+                if (adjustedDealerSuitValue > adjustedPlayerSuitValue) {
+                    document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="red-text">あなたの負け！</span><br>ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}： あなたのカード➤${playerSuitWord} - ${playerValue}<br>`;
                     document.getElementById('result').innerHTML += '<br><span class="green-text">ゲーム終了！</span>';
                     document.getElementById('result2').innerHTML += "今回のスコア：" + currentRound + "連勝";
                     document.getElementById('result3').innerHTML = "<img src ='Not10win.jpg'>";
@@ -120,15 +131,15 @@
                     removeCards(0, index); // 勝利時にカードを捨てる
                 }
             } else if ((highLowTopic === 'High' && playerValue > dealerValue) ||
-                       (highLowTopic === 'Low' && playerValue < dealerValue)) {
-                    document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="blue-text">あなたの勝ち！</span><br>ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}： あなたのカード➤ ${playerSuitWord} - ${playerValue}<br>`;
-                    removeCards(0, index); // 勝利時にカードを捨てる
+                    (highLowTopic === 'Low' && playerValue < dealerValue)) {
+                document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="blue-text">あなたの勝ち！</span><br>ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}： あなたのカード➤ ${playerSuitWord} - ${playerValue}<br>`;
+                removeCards(0, index); // 勝利時にカードを捨てる
             } else {
-                    document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="red-text">あなたの負け！</span><br>ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}： あなたのカード➤ ${playerSuitWord} - ${playerValue}<br>`;
-                    document.getElementById('result').innerHTML += '<br><span class="green-text">ゲーム終了！</span>';
-                    document.getElementById('result2').innerHTML += "今回のスコア：" + currentRound + "連勝";
-                    document.getElementById('result3').innerHTML = "<img src ='Not10win.jpg'>";
-                    gameActive = false;
+                document.getElementById('result').innerHTML = `ラウンド${currentRound + 1}： <span class="red-text">あなたの負け！</span><br>ディーラーのカード➤ ${dealerSuitWord} - ${dealerValue}： あなたのカード➤ ${playerSuitWord} - ${playerValue}<br>`;
+                document.getElementById('result').innerHTML += '<br><span class="green-text">ゲーム終了！</span>';
+                document.getElementById('result2').innerHTML += "今回のスコア：" + currentRound + "連勝";
+                document.getElementById('result3').innerHTML = "<img src ='Not10win.jpg'>";
+                gameActive = false;
             }
 
             currentRound++; // ラウンドが１ずつ上がる
@@ -140,6 +151,18 @@
                 document.getElementById('result3').innerHTML = "<img src ='10win.jpg'>";
             }
         }
+
+        // Low の場合のマークの強さを調整する関数
+        function adjustForLow(suitValue) {
+            switch (suitValue) {
+                case 1: return 4; // クラブが最強
+                case 2: return 3; // ダイヤが次に強い
+                case 3: return 2; // ハートが次に強い
+                case 4: return 1; // スペードが最弱
+                default: return 0;
+            }
+        }
+
 
         // 勝利したカードを手札から削除
         function removeCards(dealerIndex, playerIndex) {
