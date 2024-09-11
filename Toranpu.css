@@ -1,5 +1,6 @@
 body {
     background-size: cover;
+    color: white;
 }
 
 html{
@@ -11,11 +12,9 @@ html{
     color: red;
 }
 .blue-text {
-    color:blue;
+    color:yellow;
 }
-.green-text {
-    color:hwb(150 1% 78%);
-}
+
 h1{
     font-weight: bold;
 }
